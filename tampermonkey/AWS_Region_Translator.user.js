@@ -5,7 +5,7 @@
 // @downloadURL     https://raw.githubusercontent.com/jkister/aws/main/tampermonkey/AWS_Region_Translator.user.js
 // @updateURL       https://raw.githubusercontent.com/jkister/aws/main/tampermonkey/AWS_Region_Translator.user.js
 // @homepage        https://github.com/jkister/aws/tampermonkey
-// @version         20230520.01
+// @version         20230522.01
 // @author          jkister
 // @match           *://*/*
 // @run-at          context-menu
@@ -24,62 +24,54 @@
     // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html
     // https://www.cloudinfrastructuremap.com/
     const airportMap = {
-        apa: { region: 'us-iso-west-1', name: 'us iso west (colorado)' },
-        arn: { region: 'eu-north-1', name: 'europe (stockholm)' },
-        bah: { region: 'me-south-1', name: 'middle east (bahrain)' },
-        bjs: { region: 'cn-north-1', name: 'china (beijing)' },
-        bom: { region: 'ap-south-1', name: 'asia pacific (mumbai)' },
-        cdg: { region: 'eu-west-3', name: 'europe (paris)' },
-        cgk: { region: 'ap-southeast-3', name: 'asia pacific (jakarta)' },
-        cmh: { region: 'us-east-2', name: 'us east (ohio)' },
-        cpt: { region: 'af-south-1', name: 'africa (cape town)' },
-        dca: { region: 'us-iso-east-1', name: 'us iso east (virginia)' },
-        dub: { region: 'eu-west-1', name: 'europe (ireland)' },
-        fra: { region: 'eu-central-1', name: 'europe (frankfurt)' },
-        gru: { region: 'sa-east-1', name: 'south america (são paulo)' },
-        hkg: { region: 'ap-east-1', name: 'asia pacific (hong kong)' },
-        hyd: { region: 'ap-south-2', name: 'asia pacific (hyderabad)' },
-        iad: { region: 'us-east-1', name: 'us east (n. virginia)' },
-        icn: { region: 'ap-northeast-2', name: 'asia pacific (seoul)' },
-        kix: { region: 'ap-northeast-3', name: 'asia pacific (osaka)' },
-        lck: { region: 'us-isob-east-1', name: 'us isob east (ohio)' },
-        lhr: { region: 'eu-west-2', name: 'europe (london)' },
-        mel: { region: 'ap-southeast-4', name: 'asia pacific (melbourne)' },
-        mxp: { region: 'eu-south-1', name: 'europe (milan)' },
-        nrt: { region: 'ap-northeast-1', name: 'asia pacific (tokyo)' },
-        osu: { region: 'us-gov-east-1', name: 'aws govcloud (us-east)' },
-        pdt: { region: 'us-gov-west-1', name: 'aws govcloud (us-west)' },
-        pdx: { region: 'us-west-2', name: 'us west (oregon)' },
-        sfo: { region: 'us-west-1', name: 'us west (n. california)' },
-        sin: { region: 'ap-southeast-1', name: 'asia pacific (singapore)' },
-        syd: { region: 'ap-southeast-2', name: 'asia pacific (sydney)' },
-        uae: { region: 'me-central-1', name: 'middle east (uae)' },
-        yul: { region: 'ca-central-1', name: 'canada (central)' },
-        zaz: { region: 'eu-south-2', name: 'europe (spain)' },
-        zhy: { region: 'cn-northwest-1', name: 'china (ningxia)' },
-        zrh: { region: 'eu-central-2', name: 'europe (zurich)' },
+        APA: { region: 'us-iso-west-1', name: 'US ISO West (Colorado)' },
+        ARN: { region: 'eu-north-1', name: 'Europe (Stockholm)' },
+        BAH: { region: 'me-south-1', name: 'Middle East (Bahrain)' },
+        BJS: { region: 'cn-north-1', name: 'China (Beijing)' },
+        BOM: { region: 'ap-south-1', name: 'Asia Pacific (Mumbai)' },
+        CDG: { region: 'eu-west-3', name: 'Europe (Paris)' },
+        CGK: { region: 'ap-southeast-3', name: 'Asia Pacific (Jakarta)' },
+        CMH: { region: 'us-east-2', name: 'US East (Ohio)' },
+        CPT: { region: 'af-south-1', name: 'Africa (Cape Town)' },
+        DCA: { region: 'us-iso-east-1', name: 'US ISO East (Virginia)' },
+        DUB: { region: 'eu-west-1', name: 'Europe (Ireland)' },
+        FRA: { region: 'eu-central-1', name: 'Europe (Frankfurt)' },
+        GRU: { region: 'sa-east-1', name: 'South America (São Paulo)' },
+        HKG: { region: 'ap-east-1', name: 'Asia Pacific (Hong Kong)' },
+        HYD: { region: 'ap-south-2', name: 'Asia Pacific (Hyderabad)' },
+        IAD: { region: 'us-east-1', name: 'US East (N. Virginia)' },
+        ICN: { region: 'ap-northeast-2', name: 'Asia Pacific (Seoul)' },
+        KIX: { region: 'ap-northeast-3', name: 'Asia Pacific (Osaka)' },
+        LCK: { region: 'us-isob-east-1', name: 'US ISOB East (Ohio)' },
+        LHR: { region: 'eu-west-2', name: 'Europe (London)' },
+        MEL: { region: 'ap-southeast-4', name: 'Asia Pacific (Melbourne)' },
+        MXP: { region: 'eu-south-1', name: 'Europe (Milan)' },
+        NRT: { region: 'ap-northeast-1', name: 'Asia Pacific (Tokyo)' },
+        OSU: { region: 'us-gov-east-1', name: 'AWS GovCloud (US-East)' },
+        PDT: { region: 'us-gov-west-1', name: 'AWS GovCloud (US-West)' },
+        PDX: { region: 'us-west-2', name: 'US West (Oregon)' },
+        SFO: { region: 'us-west-1', name: 'US West (N. California)' },
+        SIN: { region: 'ap-southeast-1', name: 'Asia Pacific (Singapore)' },
+        SYD: { region: 'ap-southeast-2', name: 'Asia Pacific (Sydney)' },
+        UAE: { region: 'me-central-1', name: 'Middle East (UAE)' },
+        YUL: { region: 'ca-central-1', name: 'Canada (Central)' },
+        ZAZ: { region: 'eu-south-2', name: 'Europe (Spain)' },
+        ZHY: { region: 'cn-northwest-1', name: 'China (Ningxia)' },
+        ZRH: { region: 'eu-central-2', name: 'Europe (Zurich)' },
     };
 
-    const regionMap = {};
-    const nameMap = {};
     for (let airport in airportMap) {
-        const region = airportMap[airport].region;
-        const name = airportMap[airport].name;
+        var region = airportMap[airport].region;
+        var name = airportMap[airport].name;
+        var locale = name.match( /\((.+)\)/ )[1];
 
-        regionMap[region] = { airport: airport, name: name };
-        nameMap[name] = { airport: airport, region: region };
+        if( airport.toLowerCase() == selectedText || region == selectedText ||
+            locale.localeCompare(selectedText, 'en', {sensitivity: 'base'}) == 0 || name.localeCompare(selectedText, 'en', {sensitivity: 'base'}) == 0 ){
+            alert('airport: ' + airport + '\n\nregion: ' + region + '\n\nname: ' + name);
+            return;
+        }
     }
-    nameMap['south america (sao paulo)'] = nameMap['south america (são paulo)'];
 
-
-    if( selectedText in airportMap ){
-        alert('airport: ' + selectedText + '\n\n region: ' + airportMap[selectedText].region + '\n\n name: ' + airportMap[selectedText].name);
-    }else if( selectedText in regionMap ){
-        alert('airport: ' + regionMap[selectedText].airport + '\n\n region: ' + selectedText + '\n\n name: ' + regionMap[selectedText].name);
-    }else if( selectedText in nameMap ){
-        alert('airport: ' + nameMap[selectedText].airport + '\n\n region: ' + nameMap[selectedText].region + '\n\n name: ' + selectedText);
-    }else{
-        alert('translation not found: ' + selectedText);
-    }
+    alert('translation not found: ' + selectedText);
 
 })();
