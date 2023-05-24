@@ -5,7 +5,8 @@
 // @downloadURL     https://raw.githubusercontent.com/jkister/aws/main/tampermonkey/AWS_Region_Translator.user.js
 // @updateURL       https://raw.githubusercontent.com/jkister/aws/main/tampermonkey/AWS_Region_Translator.user.js
 // @homepage        https://github.com/jkister/aws/tampermonkey
-// @version         20230522.01
+// @icon            https://www.google.com/s2/favicons?sz=64&domain=aws.amazon.com
+// @version         20230524.01
 // @author          jkister
 // @match           *://*/*
 // @run-at          context-menu
@@ -16,7 +17,7 @@
 
     const selectedText = window.getSelection().toString().trim().toLowerCase();
     if( ! selectedText ){
-        alert('Select some text-- an airport code, region code, or region name.');
+        alert('Select some text- an airport code, region code, region name, or even locality name.');
         return;
     }
 
@@ -61,9 +62,9 @@
     };
 
     for (let airport in airportMap) {
-        var region = airportMap[airport].region;
-        var name = airportMap[airport].name;
-        var locale = name.match( /\((.+)\)/ )[1];
+        let region = airportMap[airport].region;
+        let name = airportMap[airport].name;
+        let locale = name.match( /\((.+)\)/ )[1];
 
         if( airport.toLowerCase() == selectedText || region == selectedText ||
             locale.localeCompare(selectedText, 'en', {sensitivity: 'base'}) == 0 || name.localeCompare(selectedText, 'en', {sensitivity: 'base'}) == 0 ){
@@ -72,6 +73,10 @@
         }
     }
 
-    alert('translation not found: ' + selectedText);
+    let alertMsg = "Translation not found: " + selectedText;
+    if( /^[a-z]{3}$/.test(selectedText) || /^[a-z]{2}-[a-z]{2,20}-[0-9]{1,3}$/.test(selectedText) || /^[a-z]{2}.+\(.+\)$/.test(selectedText) ){
+        alertMsg += '\n\nIf this region actually exists, please open an issue at:\nhttps://github.com/jkister/aws/issues';
+    }
+    alert(alertMsg);
 
 })();
