@@ -6,7 +6,7 @@
 // @updateURL       https://raw.githubusercontent.com/jkister/aws/main/tampermonkey/AWS_Region_Translator.user.js
 // @homepage        https://github.com/jkister/aws/tampermonkey
 // @icon            https://www.google.com/s2/favicons?sz=64&domain=aws.amazon.com
-// @version         20230705.02
+// @version         20230725.01
 // @author          jkister
 // @match           *://*/*
 // @run-at          context-menu
@@ -61,13 +61,18 @@
         ZRH: { region: 'eu-central-2', name: 'Europe (Zurich)', tz: 'Europe/Zurich' },
     };
 
-    for (let airport in airportMap) {
-        let region = airportMap[airport].region;
-        let underscoredRegion = region.replace(/-/g, '_');
-        let name = airportMap[airport].name;
-        let locale = name.match( /\((.+)\)/ )[1];
+    // allow SYD, -SYD, SYD-, -SYD-, SYD5, -SYD5, SYD5-, -SYD5-
+    const airportRegex = /^-?([a-z]{3})\d{0,3}-?$/;
+    const airportMatch = airportRegex.exec(selectedText);
+    const fuzzyAirport = airportMatch ? airportMatch[1] : null;
 
-        if( airport.toLowerCase() == selectedText || region == selectedText || underscoredRegion == selectedText ||
+    for (const airport in airportMap) {
+        const region = airportMap[airport].region;
+        const underscoredRegion = region.replace(/-/g, '_');
+        const name = airportMap[airport].name;
+        const locale = name.match( /\((.+)\)/ )[1];
+
+        if( airport.toLowerCase() == fuzzyAirport || region == selectedText || underscoredRegion == selectedText ||
             locale.localeCompare(selectedText, 'en', {sensitivity: 'base'}) == 0 || name.localeCompare(selectedText, 'en', {sensitivity: 'base'}) == 0 ){
             const now = new Date();
             const timezone = airportMap[airport].tz;
