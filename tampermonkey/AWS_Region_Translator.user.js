@@ -6,7 +6,7 @@
 // @updateURL       https://raw.githubusercontent.com/jkister/aws/main/tampermonkey/AWS_Region_Translator.user.js
 // @homepage        https://github.com/jkister/aws/tampermonkey
 // @icon            https://www.google.com/s2/favicons?sz=64&domain=aws.amazon.com
-// @version         20230725.01
+// @version         20230801.01
 // @author          jkister
 // @match           *://*/*
 // @run-at          context-menu
@@ -55,14 +55,16 @@
         SFO: { region: 'us-west-1', name: 'US West (N. California)', tz: 'America/Los_Angeles' },
         SIN: { region: 'ap-southeast-1', name: 'Asia Pacific (Singapore)', tz: 'Asia/Singapore' },
         SYD: { region: 'ap-southeast-2', name: 'Asia Pacific (Sydney)', tz: 'Australia/Sydney' },
+        TLV: { region: 'il-central-1', name: 'Israel (Tel Aviv)', tz: 'Asia/Jerusalem' },
         YUL: { region: 'ca-central-1', name: 'Canada (Central)', tz: 'America/Toronto' },
+        YYC: { region: 'ca-west-1', name: 'Canada West (Calgary)', tz: 'America/Edmonton' },
         ZAZ: { region: 'eu-south-2', name: 'Europe (Spain)', tz: 'Europe/Madrid' },
         ZHY: { region: 'cn-northwest-1', name: 'China (Ningxia)', tz: 'Asia/Shanghai' },
         ZRH: { region: 'eu-central-2', name: 'Europe (Zurich)', tz: 'Europe/Zurich' },
     };
 
-    // allow SYD, -SYD, SYD-, -SYD-, SYD5, -SYD5, SYD5-, -SYD5-
-    const airportRegex = /^-?([a-z]{3})\d{0,3}-?$/;
+    // allow SYD -SYD SYD- -SYD- SYD5 -SYD5 SYD5- -SYD5- SYD, SYD5, (SYD) (SYD5)
+    const airportRegex = /^[\(-]?([a-z]{3})\d{0,3}[\),-]?$/;
     const airportMatch = airportRegex.exec(selectedText);
     const fuzzyAirport = airportMatch ? airportMatch[1] : null;
 
