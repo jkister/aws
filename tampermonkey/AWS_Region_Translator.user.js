@@ -6,7 +6,7 @@
 // @updateURL       https://raw.githubusercontent.com/jkister/aws/main/tampermonkey/AWS_Region_Translator.user.js
 // @homepage        https://github.com/jkister/aws/tampermonkey
 // @icon            https://www.google.com/s2/favicons?sz=64&domain=aws.amazon.com
-// @version         20250729.01
+// @version         20250909.01
 // @author          jkister
 // @match           *://*/*
 // @run-at          context-menu
@@ -21,6 +21,7 @@
         return;
     }
 
+    // https://docs.aws.amazon.com/global-infrastructure/latest/regions/aws-regions.html 20250909
     // https://neokobo.blogspot.com/2022/02/aws-regions-in-order-by-partition-type.html 20230520
     // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html
     // https://www.cloudinfrastructuremap.com/
@@ -28,12 +29,13 @@
     // https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/Region.html
     // https://docs.cloudera.com/cdf-datahub/7.3.1/nifi-components-cfm2/docs/nifi-docs/components/org.apache.nifi/nifi-aws-nar/x/org.apache.nifi.processors.aws.sqs.GetSQS/index.html
     const airportMap = {
+        AKL: { region: 'ap-southeast-6', name: 'Asia Pacific (New Zealand)', tz: 'Pacific/Auckland' },
         ALE: { region: 'us-isof-south-1', name: 'US ISO South (Alpine)', tz: 'America/Chicago' },
         APA: { region: 'us-iso-west-1', name: 'US ISO West (Colorado)', tz: 'America/Denver' },
         ARN: { region: 'eu-north-1', name: 'Europe (Stockholm)', tz: 'Europe/Stockholm' },
         BAH: { region: 'me-south-1', name: 'Middle East (Bahrain)', tz: 'Asia/Bahrain' },
-        BBK: { region: 'ap-southeast-7', name: 'Asia Pacific (Thailand)', tz: 'Asia/Bangkock' },
         BJS: { region: 'cn-north-1', name: 'China (Beijing)', tz: 'Asia/Shanghai' },
+        BKK: { region: 'ap-southeast-7', name: 'Asia Pacific (Thailand)', tz: 'Asia/Bangkock' },
         BOM: { region: 'ap-south-1', name: 'Asia Pacific (Mumbai)', tz: 'Asia/Kolkata' },
         CDG: { region: 'eu-west-3', name: 'Europe (Paris)', tz: 'Europe/Paris' },
         CGK: { region: 'ap-southeast-3', name: 'Asia Pacific (Jakarta)', tz: 'Asia/Jakarta' },
@@ -49,7 +51,7 @@
         IAD: { region: 'us-east-1', name: 'US East (N. Virginia)', tz: 'America/New_York' },
         ICN: { region: 'ap-northeast-2', name: 'Asia Pacific (Seoul)', tz: 'Asia/Seoul' },
         KIX: { region: 'ap-northeast-3', name: 'Asia Pacific (Osaka)', tz: 'Asia/Tokyo' },
-        KUL: { region: 'ap-northeast-5', name: 'Asia Pacific (Kuala Lumpur)', tz: 'Asia/Kuala_Lumpur' },
+        KUL: { region: 'ap-southeast-5', name: 'Asia Pacific (Malaysia)', tz: 'Asia/Kuala_Lumpur' },
         LCK: { region: 'us-isob-east-1', name: 'US ISOB East (Ohio)', tz: 'America/New_York' },
         LTW: { region: 'us-isof-east-1', name: 'US ISOF East (Maryland)', tz: 'America/New_York' },
         LHR: { region: 'eu-west-2', name: 'Europe (London)', tz: 'Europe/London' },
@@ -65,8 +67,8 @@
         SFO: { region: 'us-west-1', name: 'US West (N. California)', tz: 'America/Los_Angeles' },
         SIN: { region: 'ap-southeast-1', name: 'Asia Pacific (Singapore)', tz: 'Asia/Singapore' },
         SYD: { region: 'ap-southeast-2', name: 'Asia Pacific (Sydney)', tz: 'Australia/Sydney' },
-        TPE: { region: 'ap-east-2', name: 'Asia Pacific (Taipei)', tz: 'Asia/Taipei' },
         TLV: { region: 'il-central-1', name: 'Israel (Tel Aviv)', tz: 'Asia/Jerusalem' },
+        TPE: { region: 'ap-east-2', name: 'Asia Pacific (Taipei)', tz: 'Asia/Taipei' },
         YUL: { region: 'ca-central-1', name: 'Canada (Central)', tz: 'America/Toronto' },
         YYC: { region: 'ca-west-1', name: 'Canada West (Calgary)', tz: 'America/Edmonton' },
         ZAZ: { region: 'eu-south-2', name: 'Europe (Spain)', tz: 'Europe/Madrid' },
