@@ -9,17 +9,10 @@
 // @version         20250909.01
 // @author          jkister
 // @match           *://*/*
-// @run-at          context-menu
 // ==/UserScript==
 
 (function () {
     'use strict';
-
-    const selectedText = window.getSelection().toString().trim().toLowerCase();
-    if( ! selectedText ){
-        alert('Select some text- an airport code, region code, region name, or even locality name.');
-        return;
-    }
 
     // https://docs.aws.amazon.com/global-infrastructure/latest/regions/aws-regions.html 20250909
     // https://neokobo.blogspot.com/2022/02/aws-regions-in-order-by-partition-type.html 20230520
@@ -35,7 +28,7 @@
         ARN: { region: 'eu-north-1', name: 'Europe (Stockholm)', tz: 'Europe/Stockholm' },
         BAH: { region: 'me-south-1', name: 'Middle East (Bahrain)', tz: 'Asia/Bahrain' },
         BJS: { region: 'cn-north-1', name: 'China (Beijing)', tz: 'Asia/Shanghai' },
-        BKK: { region: 'ap-southeast-7', name: 'Asia Pacific (Thailand)', tz: 'Asia/Bangkock' },
+        BKK: { region: 'ap-southeast-7', name: 'Asia Pacific (Thailand)', tz: 'Asia/Bangkok' },
         BOM: { region: 'ap-south-1', name: 'Asia Pacific (Mumbai)', tz: 'Asia/Kolkata' },
         CDG: { region: 'eu-west-3', name: 'Europe (Paris)', tz: 'Europe/Paris' },
         CGK: { region: 'ap-southeast-3', name: 'Asia Pacific (Jakarta)', tz: 'Asia/Jakarta' },
@@ -78,29 +71,109 @@
 
     // allow SYD -SYD SYD- -SYD- SYD5 -SYD5 SYD5- -SYD5- SYD, SYD5, (SYD) (SYD5)
     const airportRegex = /^[\(-]?([a-z]{3})\d{0,3}[\),-]?$/;
-    const airportMatch = airportRegex.exec(selectedText);
-    const fuzzyAirport = airportMatch ? airportMatch[1] : null;
 
-    for (const airport in airportMap) {
-        const region = airportMap[airport].region;
-        const underscoredRegion = region.replace(/-/g, '_');
-        const name = airportMap[airport].name;
-        const locale = name.match( /\((.+)\)/ )[1];
+    const selectedPatterns = [
+        /^[a-z]{3}$/,
+        /^[a-z]{2}-[a-z]{2,20}-[0-9]{1,3}$/,
+        /^[a-z]{2}.{2,50}\([^)]{2,50}\)$/
+    ];
 
-        if( airport.toLowerCase() == fuzzyAirport || region == selectedText || underscoredRegion == selectedText ||
-            locale.localeCompare(selectedText, 'en', {sensitivity: 'base'}) == 0 || name.localeCompare(selectedText, 'en', {sensitivity: 'base'}) == 0 ){
-            const now = new Date();
-            const timezone = airportMap[airport].tz;
-            const remTime = now.toLocaleString('en-US', {timeZone: timezone} );
-            alert('airport: ' + airport + '\n\nregion: ' + region + '\n\nname: ' + name+ '\n\ntime: ' + remTime + ' (' + timezone + ')' );
-            return;
+    const tooltip = document.createElement('div');
+    tooltip.style.position = 'fixed';
+    tooltip.style.background = 'rgba(0,0,0,0.85)';
+    tooltip.style.color = '#fff';
+    tooltip.style.padding = '8px 12px';
+    tooltip.style.borderRadius = '6px';
+    tooltip.style.fontSize = '14px';
+    tooltip.style.zIndex = 9999;
+    tooltip.style.pointerEvents = 'auto'; // allow clicks
+    tooltip.style.transition = 'opacity 0.2s';
+    tooltip.style.opacity = 0;
+    tooltip.style.display = 'inline-block';
+    tooltip.style.whiteSpace = 'nowrap';
+    tooltip.style.maxWidth = '90vw';     // max width if line is too long
+
+    const closeBtn = document.createElement('span');
+    closeBtn.innerHTML = '&times;';
+    closeBtn.style.float = 'right';
+    closeBtn.style.cursor = 'pointer';
+    closeBtn.style.marginLeft = '10px';
+    closeBtn.style.fontWeight = 'bold';
+    tooltip.appendChild(closeBtn);
+
+    const contentDiv = document.createElement('div');
+    tooltip.appendChild(contentDiv);
+
+    document.body.appendChild(tooltip);
+
+    closeBtn.addEventListener('click', () => {
+        tooltip.style.opacity = 0;
+    });
+
+    let onClickOutside = null;
+
+    function showTooltip(content, x, y) {
+        contentDiv.innerHTML = content;
+        tooltip.style.left = `${x + 10}px`;
+        tooltip.style.top = `${y + 10}px`;
+        tooltip.style.opacity = 1;
+
+        if (onClickOutside) {
+            document.removeEventListener('click', onClickOutside);
         }
+
+        onClickOutside = (event) => {
+            if (!tooltip.contains(event.target)) {
+                tooltip.style.opacity = 0;
+                document.removeEventListener('click', onClickOutside);
+                onClickOutside = null;
+            }
+        };
+
+        setTimeout(() => {
+            // so selection click doesn't hide tooltip immediately
+            document.addEventListener('click', onClickOutside);
+        }, 0);
     }
 
-    let alertMsg = "Translation not found: " + selectedText;
-    if( /^[a-z]{3}$/.test(selectedText) || /^[a-z]{2}-[a-z]{2,20}-[0-9]{1,3}$/.test(selectedText) || /^[a-z]{2}.+\(.+\)$/.test(selectedText) ){
-        alertMsg += '\n\nIf this region actually exists, please open an issue at:\nhttps://github.com/jkister/aws/issues';
-    }
-    alert(alertMsg);
+    document.addEventListener('mouseup', function(event) {
+        if (tooltip.contains(event.target)) return;
+        if (event.button != 0) return;
 
+        const selectedText = window.getSelection().toString().trim();
+        if (! selectedText) return; // a click, without selection
+
+        const selectedTextLower = selectedText.toLowerCase();
+
+        const airportMatch = airportRegex.exec(selectedTextLower);
+        const fuzzyAirport = airportMatch ? airportMatch[1] : null;
+
+        for (const airport in airportMap) {
+            const region = airportMap[airport].region;
+            const underscoredRegion = region.replace(/-/g, '_');
+            const name = airportMap[airport].name;
+            const locale = name.match( /\((.+)\)/ )[1];
+
+            if( airport.toLowerCase() == fuzzyAirport || region == selectedTextLower || underscoredRegion == selectedTextLower ||
+                locale.localeCompare(selectedTextLower, 'en', {sensitivity: 'base'}) == 0 || name.localeCompare(selectedTextLower, 'en', {sensitivity: 'base'}) == 0 ){
+                const now = new Date();
+                const timezone = airportMap[airport].tz;
+                const remTime = now.toLocaleString('en-US', {timeZone: timezone} );
+
+                showTooltip(
+                    `Airport: ${airport}<br>Region: ${region}<br>Name: ${name}<br>Time: ${remTime} (${timezone})`,
+                    event.clientX,
+                    event.clientY
+                );
+
+                return;
+            }
+        }
+
+        if (! selectedPatterns.some(rx => rx.test(selectedTextLower))) return;
+        const logMsg = "AWS Region Translator: translation not found: " + selectedText +
+                       '\n\n' +
+                       'If this region actually exists, please open an issue at:\nhttps://github.com/jkister/aws/issues';
+        console.log(logMsg);
+    });
 })();
