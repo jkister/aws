@@ -6,7 +6,7 @@
 // @updateURL       https://raw.githubusercontent.com/jkister/aws/main/tampermonkey/AWS_Region_Translator.user.js
 // @homepage        https://github.com/jkister/aws/tampermonkey
 // @icon            https://www.google.com/s2/favicons?sz=64&domain=aws.amazon.com
-// @version         20250909.01
+// @version         20250910.01
 // @author          jkister
 // @match           *://*/*
 // ==/UserScript==
@@ -74,7 +74,7 @@
 
     const selectedPatterns = [
         /^[a-z]{3}$/,
-        /^[a-z]{2}-[a-z]{2,20}-[0-9]{1,3}$/,
+        /^[a-z]{2}-[a-z]{2,20}-[0-9]{1,3}[a-z]?$/,
         /^[a-z]{2}.{2,50}\([^)]{2,50}\)$/
     ];
 
@@ -140,8 +140,12 @@
         if (tooltip.contains(event.target)) return;
         if (event.button != 0) return;
 
-        const selectedText = window.getSelection().toString().trim();
+        let selectedText = window.getSelection().toString().trim();
         if (! selectedText) return; // a click, without selection
+
+        selectedText = selectedText.replace(/^([a-z]{2}-[a-z]{2,20}-[0-9]{1,3})[a-z]?$/, "$1") // understand us-west-2 and us-west-2a
+                                   .replace(/^\(([^)]+)\)?$/, "$1")  // allow jakarta, (jakarta), (jakarta
+                                   .replace(/^\(?([^(]+)\)$/, "$1"); // jakarta)
 
         const selectedTextLower = selectedText.toLowerCase();
 
