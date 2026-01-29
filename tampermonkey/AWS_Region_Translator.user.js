@@ -6,7 +6,7 @@
 // @updateURL       https://raw.githubusercontent.com/jkister/aws/main/tampermonkey/AWS_Region_Translator.user.js
 // @homepage        https://github.com/jkister/aws/tampermonkey
 // @icon            https://www.google.com/s2/favicons?sz=64&domain=aws.amazon.com
-// @version         20250910.01
+// @version         20251208.00
 // @author          jkister
 // @match           *://*/*
 // ==/UserScript==
@@ -106,11 +106,17 @@
 
     document.body.appendChild(tooltip);
 
-    closeBtn.addEventListener('click', () => {
-        tooltip.style.opacity = 0;
-    });
+    closeBtn.addEventListener('click', hideTooltip);
 
     let onClickOutside = null;
+
+    function hideTooltip() {
+        tooltip.style.opacity = 0;
+        if (onClickOutside) {
+            document.removeEventListener('click', onClickOutside);
+            onClickOutside = null;
+        }
+    }
 
     function showTooltip(content, x, y) {
         contentDiv.innerHTML = content;
@@ -124,9 +130,7 @@
 
         onClickOutside = (event) => {
             if (!tooltip.contains(event.target)) {
-                tooltip.style.opacity = 0;
-                document.removeEventListener('click', onClickOutside);
-                onClickOutside = null;
+                hideTooltip();
             }
         };
 
@@ -135,6 +139,12 @@
             document.addEventListener('click', onClickOutside);
         }, 0);
     }
+
+    document.addEventListener('keydown', function(e) {
+        if ((e.key === "Escape" || e.key === "Esc") && tooltip.style.opacity === "1") {
+            hideTooltip();
+        }
+    });
 
     document.addEventListener('mouseup', function(event) {
         if (tooltip.contains(event.target)) return;
